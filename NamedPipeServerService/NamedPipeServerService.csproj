@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NamedPipeServerService\NamedPipeClientService.csproj" />
+    <ProjectReference Include="..\NamedPipeClientService\NamedPipeClientService.csproj" />
   </ItemGroup>
 
 </Project>

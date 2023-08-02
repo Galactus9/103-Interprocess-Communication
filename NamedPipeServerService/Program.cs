@@ -1,39 +1,74 @@
-﻿using System.IO.Pipes;
+﻿using System.Diagnostics;
+using System.IO.Pipes;
 using System.Text;
-using System.Xml;
 
-namespace NamedPipeServerService
+namespace InterprocessCommunication
 {
     public class Program
     {
         static async Task Main(string[] args)
         {
+            var one = Task.Run(async () =>
+            {
+                var server = new NamedPipeServerStream("testPipe", PipeDirection.InOut);
 
-            var client = new NamedPipeClientStream(".", "testPipe", PipeDirection.InOut, PipeOptions.Asynchronous);
+                string clientExePath = "NamedPipeClientService.exe";
 
-            Console.WriteLine("Client -- Attempting to connect to pipe...\n");
+                ProcessStartInfo startInfo = new ProcessStartInfo
+                {
+                    FileName = clientExePath,
+                };
 
-            await client.ConnectAsync();
+                using (Process process = new Process())
+                {
+                    process.StartInfo = startInfo;
 
-            Console.WriteLine("Client -- Connected to pipe.\n");
+                    process.Start();
 
-            string someText = "Some text from the client";
+                    Thread.Sleep(500);
 
-            var data = Encoding.UTF8.GetBytes(someText);
+                    Console.WriteLine("Server -- NamedPipeServerStream object created.\n");
 
-            var lenghtData = BitConverter.GetBytes(data.Length);
+                    Thread.Sleep(500);
 
-            Console.WriteLine("Client -- Send the size of the byte array to the server.\n");
+                    Console.WriteLine("Server -- Waiting for client connection...\n");
 
-            await client.WriteAsync(lenghtData, 0, 4);
+                    server.WaitForConnection();
 
-            Console.WriteLine("Client -- Send the actual of the byte array to the server.\n");
+                    Thread.Sleep(500);
 
-            await client.WriteAsync(data, 0, data.Length);
+                    Console.WriteLine("Server -- Client connected.\n");
 
-            var a = new byte[1];
+                    byte[] data = new byte[4];
 
-            await client.ReadAsync(a, 0, 1);
+                    await server.ReadAsync(data, 0, 4);
+
+                    var lenght = BitConverter.ToInt32(data, 0);
+
+                    Thread.Sleep(500);
+
+                    Console.WriteLine($"Server -- Received the size of the byte array from the Client.({lenght})\n");
+
+                    byte[] realData = new byte[lenght];
+
+                    await server.ReadAsync(realData, 0, lenght);
+
+                    Thread.Sleep(500);
+
+                    Console.WriteLine("Server -- Receive the actual message in a byte array from the Client.\n");
+
+                    var str = Encoding.UTF8.GetString(realData);
+
+                    Thread.Sleep(500);
+
+                    Console.WriteLine($"Server -- The message from the Client is : {str}.\n");
+
+                    await server.WriteAsync(new byte[] { 0 }, 0, 1);
+
+                    process.WaitForExit();
+                }
+            });
+            Task.WaitAll(one);
         }
     }
 }
