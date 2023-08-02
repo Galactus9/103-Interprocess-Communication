@@ -36,10 +36,6 @@ dotnet run
 
 5. The client reads the response from the server and can take further action based on the response.
 
-## Customization
-
-You can customize the project to add more complex functionality or use the named pipe communication as a basis for other IPC mechanisms.
-
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
