@@ -12,7 +12,7 @@ The project showcases how to establish a bidirectional communication channel bet
 
 ```bash
 git clone https://github.com/your-username/named-pipe-demo.git
-cd named-pipe-demo
+cd Interprocess-Communication
 ```
 
 2. Build the solution to ensure all the dependencies are resolved.
